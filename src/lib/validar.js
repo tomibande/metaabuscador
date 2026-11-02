@@ -37,11 +37,14 @@ export function validarFiltros(b) {
   if (checkIn === false || checkOut === false) return { error: 'Las fechas deben tener formato AAAA-MM-DD.' };
   if (!checkIn || !checkOut) return { error: 'Indicá fecha de llegada y de salida para comprobar disponibilidad.' };
   if (checkIn && checkOut <= checkIn) return { error: 'La salida debe ser posterior a la llegada.' };
+  // Medianoche UTC de hoy: Date.now() es un instante, así que descartaba el día en curso.
+  // El -1 de tolerancia cubre al usuario en UTC-3 cuando el servidor ya pasó de medianoche.
+  const hoyUtc = Date.parse(`${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`);
   const noches = (Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000;
-  const diasHastaLlegada = (Date.parse(checkIn) - Date.now()) / 86_400_000;
-  if (noches > 90 || diasHastaLlegada < 0 || diasHastaLlegada > 500) {
-    return { error: 'Las fechas deben estar dentro de los próximos 500 días y la estadía no puede superar 90 noches.' };
-  }
+  const diasHastaLlegada = (Date.parse(checkIn) - hoyUtc) / 86_400_000;
+  if (diasHastaLlegada < -1) return { error: 'La fecha de llegada ya pasó.' };
+  if (diasHastaLlegada > 500) return { error: 'La llegada debe estar dentro de los próximos 500 días.' };
+  if (noches > 90) return { error: 'La estadía no puede superar 90 noches.' };
 
   let servicios = [];
   if (b.servicios !== undefined) {

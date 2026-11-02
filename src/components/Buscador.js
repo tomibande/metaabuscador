@@ -22,6 +22,7 @@ export default function Buscador() {
   const [resultados, setResultados] = useState([]);
   const [mensajeError, setMensajeError] = useState('');
   const [auth, setAuth] = useState(null); // null | 'login' | 'registro'
+  const [avisoFav, setAvisoFav] = useState(''); // errores de favoritos, en vez de alert()
 
   async function cargarFavoritos() {
     setFavoritos((await api('/api/favoritos')).favoritos);
@@ -55,21 +56,36 @@ export default function Buscador() {
     }
   }
 
+  // La cookie dura 7 días. Si venció con la página abierta, el estado de React todavía cree
+  // que hay sesión y el pedido vuelve 401: antes eso moría en un alert() sin salida.
+  function manejarErrorFavorito(e) {
+    if (e.status === 401) {
+      setUsuario(null);
+      setFavoritos([]);
+      setVista('busqueda');
+      setAvisoFav('Tu sesión venció. Iniciá sesión de nuevo para guardar alojamientos.');
+      return setAuth('login');
+    }
+    setAvisoFav(e.message);
+  }
+
   async function alternarFavorito(r) {
     if (!usuario) return setAuth('login');
     const existente = favoritos.find((f) => f.urlOrigen === r.url);
+    setAvisoFav('');
     try {
       if (existente) await api(`/api/favoritos/${existente.id}`, { method: 'DELETE' });
       else await api('/api/favoritos', { method: 'POST', body: JSON.stringify({ nombre: r.nombre, precio: r.precioNumero, url: r.url, imagen: r.imagen }) });
       await cargarFavoritos();
-    } catch (e) { alert(e.message); }
+    } catch (e) { manejarErrorFavorito(e); }
   }
 
   async function quitarFavorito(f) {
+    setAvisoFav('');
     try {
       await api(`/api/favoritos/${f.id}`, { method: 'DELETE' });
       await cargarFavoritos();
-    } catch (e) { alert(e.message); }
+    } catch (e) { manejarErrorFavorito(e); }
   }
 
   async function salir() {
@@ -77,10 +93,12 @@ export default function Buscador() {
     setUsuario(null);
     setFavoritos([]);
     setVista('busqueda');
+    setAvisoFav('');
   }
 
   async function alIniciarSesion(u) {
     setUsuario(u);
+    setAvisoFav('');
     await cargarFavoritos();
     setAuth(null);
   }
@@ -134,10 +152,11 @@ export default function Buscador() {
             <h2>{vista === 'favoritos' ? 'Mis favoritos' : 'Resultados'}</h2>
             {usuario && (
               <button className="enlace" onClick={() => setVista(vista === 'favoritos' ? 'busqueda' : 'favoritos')}>
-                {vista === 'favoritos' ? 'Volver a la búsqueda' : 'Ver mis favoritos'}
+                {vista === 'favoritos' ? 'Volver a la búsqueda' : `Ver mis favoritos (${favoritos.length})`}
               </button>
             )}
           </div>
+          {avisoFav && <p className="error" role="alert">{avisoFav}</p>}
           {panel()}
         </section>
       </main>

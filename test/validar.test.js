@@ -7,7 +7,8 @@ const checkOutFuturo = new Date(Date.now() + 10 * 86_400_000).toISOString().slic
 const base = { destino: 'Bariloche', huespedes: 2, checkIn: checkInFuturo, checkOut: checkOutFuturo };
 
 test('acepta filtros válidos', () => {
-  const r = validarFiltros({ ...base, precioMax: 100, checkIn: '2026-12-01', checkOut: '2026-12-05', servicios: ['wifi'] });
+  // Usa checkInFuturo/checkOutFuturo de `base`: con fechas fijas el test caducaba.
+  const r = validarFiltros({ ...base, precioMax: 100, servicios: ['wifi'] });
   assert.equal(r.error, undefined);
   assert.equal(r.valor.destino, 'Bariloche');
 });

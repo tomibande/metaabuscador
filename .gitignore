@@ -4,8 +4,4 @@ node_modules/
 .env.local
 *.db
 *.db-journal
-
-node_modules/
-.next/
-.env
 prisma/dev.db

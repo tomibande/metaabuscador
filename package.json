@@ -2,7 +2,7 @@
   "name": "iclud-metabuscador",
   "version": "2.0.0",
   "private": true,
-  "description": "Metabuscador de alojamientos ICLUD (Next.js + Tavily + Gemini + Prisma)",
+  "description": "Metabuscador de alojamientos ICLUD (Next.js + SerpApi/Google Hotels + Prisma)",
   "type": "module",
   "engines": { "node": ">=20.9" },
   "scripts": {

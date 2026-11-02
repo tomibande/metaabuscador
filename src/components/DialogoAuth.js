@@ -30,10 +30,10 @@ export default function DialogoAuth({ modo, onCambiarModo, onCerrar, onExito }) 
 
   return (
     <dialog ref={ref} onClose={onCerrar}>
-      <form onSubmit={enviar} noValidate>
+      <form onSubmit={enviar}>
         <h2>{registro ? 'Crear cuenta' : 'Iniciar sesión'}</h2>
         {registro && (
-          <label>Nombre <input name="nombre" maxLength={60} autoComplete="name" /></label>
+          <label>Nombre <input name="nombre" maxLength={60} autoComplete="name" required /></label>
         )}
         <label>Email <input name="email" type="email" maxLength={120} autoComplete="email" required /></label>
         <label>
